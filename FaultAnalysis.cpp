@@ -1,45 +1,34 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Gate {
+    string type;
+    string input1;
+    string input2;
+};
 
 // Evaluate value of combinational gate
-int evaluateCircuit(const string &gate, unordered_map<string, int> &nodeValues) {
+int evaluateCircuit(const Gate &gate, unordered_map<string, int> &nodeValues) {
     int result;
-
-    size_t notpos = gate.find("~");
-    if(notpos == 0) {
-        string first = gate.substr(notpos+1);
-        result = !nodeValues[first]; 
+    cout << gate.type << " " << gate.input1 << "gap" << gate.input2 << '\n';
+    if(gate.type == "~") {
+        result = !nodeValues[gate.input1];
     }
-    else {
-        size_t gatepos = gate.find("|");
-
-        if(gatepos == string::npos) {
-
-            gatepos = gate.find("&");
-
-            if(gatepos == string::npos) {
-
-                gatepos = gate.find("^");
-            }
-        }
-        string first = gate.substr(0, gatepos);
-        string second = gate.substr(gatepos + 1);
-        if( gate[gatepos] == '&') {
-            result = nodeValues[first] & nodeValues[second];
-        }
-        else if( gate[gatepos] == '|') {
-            result = nodeValues[first] | nodeValues[second];
-        }
-        else if( gate[gatepos] == '^') {
-            result = nodeValues[first] ^ nodeValues[second];
-        }
+    else if(gate.type == "&") {
+        result = nodeValues[gate.input1] & nodeValues[gate.input2];
     }
+    else if(gate.type == "|") {
+        result = nodeValues[gate.input1] | nodeValues[gate.input2];
+    }
+    else if(gate.type == "^") {
+        result = nodeValues[gate.input1] ^ nodeValues[gate.input2];
+    }
+    cout << result << '\n';
     return result;
 }
 
 //Simulate value of node according to the fault 
-void simulateCicuit(const string &gate, unordered_map<string, int> &nodeValues, const string& node, const string& faultNode, bool isFaulty, int faultType) {
+void simulateCicuit(const Gate &gate, unordered_map<string, int> &nodeValues, const string& node, const string& faultNode, bool isFaulty, int faultType) {
     int gateValue = evaluateCircuit(gate, nodeValues);
 
     if(node == faultNode && isFaulty ) {
@@ -64,8 +53,8 @@ int main( ) {
     string circuitFile;
     cout << "Enter the circuit file: \n";
     cin >>  circuitFile;
-    vector<pair<string, string>> circuit;
-
+    vector<pair<string, Gate>> circuit;
+    Gate gate;
     ifstream file(circuitFile);
     if (file.is_open()) {
         string line;
@@ -74,7 +63,28 @@ int main( ) {
                 line.erase(remove(line.begin(), line.end(), ' '), line.end());
                 size_t equalpos = line.find("=");
                 string internalNode = line.substr(0, equalpos);
-                string gate = line.substr(equalpos+1);
+                
+                size_t notpos = line.find("~");
+                if(notpos != string::npos) {
+                gate.type = "~";
+                gate.input1 = line.substr(notpos+1);
+                gate.input2 = "";
+                }
+                else {
+                    size_t gatepos = line.find("|");
+                    if(gatepos == string::npos) {
+
+                        gatepos = line.find("&");
+
+                        if(gatepos == string::npos) {
+
+                            gatepos = line.find("^");
+                        }
+                    }
+                    gate.type = line[gatepos];
+                    gate.input1 = line.substr(equalpos+1, gatepos - equalpos -1);
+                    gate.input2 = line.substr(gatepos+1);
+                }
                 circuit.push_back({internalNode, gate});
 
             }
@@ -138,7 +148,7 @@ int main( ) {
         // If the fault was not there
         for (const auto &Node : circuit) {
             const string &node = Node.first;
-            const string &gate = Node.second;
+            const Gate &gate = Node.second;
             simulateCicuit(gate, nodeValues, node,  faultNode, false, faultType);
 
         }
@@ -147,7 +157,7 @@ int main( ) {
         //if fault was present
         for (const auto &Node : circuit) {
             const string node = Node.first;
-            const string gate = Node.second;
+            const Gate gate = Node.second;
             simulateCicuit(gate, nodeValues, node,  faultNode, true, faultType);
 
         }
@@ -162,5 +172,3 @@ int main( ) {
     outputFile.close();
     }
 }
-
-
