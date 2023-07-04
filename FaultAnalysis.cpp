@@ -10,7 +10,7 @@ struct Gate {
 // Evaluate value of combinational gate
 int evaluateCircuit(const Gate &gate, unordered_map<string, int> &nodeValues) {
     int result;
-    cout << gate.type << " " << gate.input1 << "gap" << gate.input2 << '\n';
+    //cout << gate.type << " " << gate.input1 << "gap" << gate.input2 << '\n';
     if(gate.type == "~") {
         result = !nodeValues[gate.input1];
     }
