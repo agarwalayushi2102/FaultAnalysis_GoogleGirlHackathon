@@ -39,5 +39,3 @@ To use this code, follow these steps:
 4. Check the "output.txt" file to see the faulty combinations and their corresponding output values.
 
 Note: Make sure to include the necessary input files in the same directory as the code file.
-
-Please note that this code is provided as a starting point and may need modifications to suit your specific circuit and fault requirements.
